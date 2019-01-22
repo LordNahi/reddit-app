@@ -34,7 +34,9 @@ export default Vue.extend({
   data() {
     return {
       selectedPost: {} as IPost,
-      posts: [] as IPost[]
+      posts: [] as IPost[],
+      sub: "",
+      after: ""
     };
   },
   components: {
@@ -44,9 +46,17 @@ export default Vue.extend({
     handlePostSelect(post: IPost) {
       this.selectedPost = post;
     },
-    getPosts() {
+    getPosts(sub?: string) {
+      if (sub && sub !== this.sub) {
+        this.after = "";
+        this.sub = sub;
+      }
+
       let body = "";
-      let url = "https://www.reddit.com/r/funny.json";
+      let url = `https://www.reddit.com/r/${this.sub}.json?limit=50&after=${
+        this.after
+      }`;
+      let nextAfter = "";
 
       http
         .get(url, resposnse => {
@@ -59,6 +69,7 @@ export default Vue.extend({
           resposnse.on("end", () => {
             const response = JSON.parse(body);
             const posts = response.data.children;
+            const nextAfter = response.data.after;
 
             for (const post of posts) {
               const data: IPost = post.data;
