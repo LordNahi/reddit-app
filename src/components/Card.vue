@@ -45,6 +45,10 @@ export default Vue.extend({
   border-radius: 5px;
 }
 
+.card:hover {
+  cursor: pointer;
+}
+
 .thumbnail {
   border-radius: 2px;
 }

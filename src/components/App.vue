@@ -9,16 +9,21 @@
       />
     </div>
     <div class="post-content">
-      <video
-        v-if="selectedPost.is_video"
-        preload="auto"
-        autoplay="autoplay"
-        loop="loop"
-        class="post-image"
-      >
-        <source :src="selectedPost.media.reddit_video.fallback_url" type="video/webm">
-      </video>
-      <img v-else class="post-image" :src="selectedPost.url">
+      <div v-if="selectedPost">
+        <video
+          v-if="selectedPost.is_video"
+          preload="auto"
+          autoplay="autoplay"
+          loop="loop"
+          class="post-image"
+        >
+          <source :src="selectedPost.media.reddit_video.fallback_url" type="video/webm">
+        </video>
+        <img v-else class="post-image" :src="selectedPost.url">
+      </div>
+      <div v-else class="no-image">
+        <h1 class="click-a-post">Click a post!</h1>
+      </div>
     </div>
   </div>
 </template>
@@ -33,7 +38,7 @@ import { IPost } from "../types";
 export default Vue.extend({
   data() {
     return {
-      selectedPost: {} as IPost,
+      selectedPost: undefined as IPost | undefined,
       posts: [] as IPost[],
       sub: "",
       after: ""
@@ -53,9 +58,10 @@ export default Vue.extend({
       }
 
       let body = "";
-      let url = `https://www.reddit.com/r/${this.sub}.json?limit=50&after=${
-        this.after
-      }`;
+      let currentAfter = this.after !== "" ? `&after=${this.after}` : "";
+      let url = `https://www.reddit.com/r/${
+        this.sub
+      }.json?limit=50${currentAfter}`;
       let nextAfter = "";
 
       http
@@ -74,8 +80,6 @@ export default Vue.extend({
             for (const post of posts) {
               const data: IPost = post.data;
 
-              console.log(data);
-
               this.posts.push(data);
             }
           });
@@ -86,7 +90,7 @@ export default Vue.extend({
     }
   },
   mounted() {
-    this.getPosts();
+    this.getPosts("funny");
   }
 });
 </script>
@@ -116,9 +120,22 @@ export default Vue.extend({
   right: 0;
 }
 
+.no-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
 .post-image {
   max-width: 100%;
   min-width: 100%;
+}
+
+.click-a-post {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  color: #dae0e6;
 }
 
 .title {
