@@ -1,6 +1,6 @@
 import Vue from "vue";
 
-import AppComponent from "./components/App.vue";
+import AppComponent from "./App.vue";
 
 let v = new Vue({
 	el: "#app",

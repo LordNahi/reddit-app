@@ -1,12 +1,13 @@
 <template>
   <div class="container">
-    <div class="feed">
+    <div id="feed" class="feed">
       <CardComponent
         v-for="post in posts"
         :key="post.url"
         :post="post"
         @onPostSelect="handlePostSelect"
       />
+      <LoadMoreComponent @onPress="getPosts" :loading="loading"/>
     </div>
     <div class="post-content">
       <div v-if="selectedPost">
@@ -31,13 +32,15 @@
 <script lang="ts">
 import Vue from "vue";
 import * as http from "http";
-import CardComponent from "./Card.vue";
+import CardComponent from "./components/Card.vue";
+import LoadMoreComponent from "./components/LoadMore.vue";
 
-import { IPost } from "../types";
+import { IPost } from "./types";
 
 export default Vue.extend({
   data() {
     return {
+      loading: false,
       selectedPost: undefined as IPost | undefined,
       posts: [] as IPost[],
       sub: "",
@@ -45,7 +48,8 @@ export default Vue.extend({
     };
   },
   components: {
-    CardComponent
+    CardComponent,
+    LoadMoreComponent
   },
   methods: {
     handlePostSelect(post: IPost) {
@@ -58,11 +62,11 @@ export default Vue.extend({
       }
 
       let body = "";
-      let currentAfter = this.after !== "" ? `&after=${this.after}` : "";
-      let url = `https://www.reddit.com/r/${
-        this.sub
-      }.json?limit=50${currentAfter}`;
-      let nextAfter = "";
+      let prefixedSub = this.sub !== "" ? `r/${this.sub}` : "";
+      let prefixedAfter = this.after !== "" ? `&after=${this.after}` : "";
+      let url = `https://www.reddit.com/${prefixedSub}.json?limit=50${prefixedAfter}`;
+
+      this.loading = true;
 
       http
         .get(url, resposnse => {
@@ -75,13 +79,17 @@ export default Vue.extend({
           resposnse.on("end", () => {
             const response = JSON.parse(body);
             const posts = response.data.children;
-            const nextAfter = response.data.after;
+            this.after = response.data.after;
 
             for (const post of posts) {
               const data: IPost = post.data;
 
               this.posts.push(data);
             }
+
+            console.log("POSTS:", this.posts);
+
+            this.loading = false;
           });
         })
         .on("error", e => {
@@ -89,8 +97,8 @@ export default Vue.extend({
         });
     }
   },
-  mounted() {
-    this.getPosts("funny");
+  beforeMount() {
+    this.getPosts();
   }
 });
 </script>
@@ -133,14 +141,10 @@ export default Vue.extend({
 }
 
 .click-a-post {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   color: #dae0e6;
 }
 
 .title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   margin-top: 0px;
   margin-left: 15px;
   font-weight: bold;

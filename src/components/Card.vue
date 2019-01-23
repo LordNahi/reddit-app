@@ -1,12 +1,24 @@
 <template>
   <div @click="onPostSelect" class="card">
-    <img class="thumbnail" :src="thumbnail">
-    <h2 class="title">{{ title }}</h2>
+    <img v-if="thumbnail" class="thumbnail" :src="thumbnail">
+    <div class="card-content">
+      <div class="card-row-top">
+        <div>
+          <h2 class="title">{{ truncatedTitle }}</h2>
+          <h3 class="author">{{ prefixedAuthor }}</h3>
+        </div>
+        <h3 @click="getPosts" class="sub">{{ prefixedSub }}</h3>
+      </div>
+      <div class="card-row-bottom">
+        <h3 class="score">{{ score }}</h3>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import { isURL } from "validator";
 
 import { IPost } from "../types";
 
@@ -17,23 +29,47 @@ export default Vue.extend({
   data() {
     return {
       title: this.post.title,
-      url: this.post.url,
       is_video: this.post.is_video,
-      thumbnail: this.post.thumbnail,
+      url: undefined as string | undefined,
+      thumbnail: undefined as string | undefined,
       thumbnail_height: this.post.thumbnail_height,
       thumbnail_width: this.post.thumbnail_width,
-      media: this.post.media
+      author: this.post.author,
+      sub: this.post.subreddit,
+      media: this.post.media,
+      score: this.post.score
     };
+  },
+  computed: {
+    prefixedAuthor(): string {
+      return `/u/${this.author}`;
+    },
+    prefixedSub(): string {
+      return `/r/${this.sub}`;
+    },
+    truncatedTitle(): string {
+      if (this.title.length > 100) {
+        return this.title.substr(0, 100) + "...";
+      }
+      return this.title;
+    }
   },
   methods: {
     onPostSelect() {
       this.$emit("onPostSelect", this.post);
+    },
+    getUrl(url: string) {
+      return isURL(url) ? url : undefined;
     }
+  },
+  beforeMount() {
+    this.url = this.getUrl(this.post.url);
+    this.thumbnail = this.getUrl(this.post.thumbnail);
   }
 });
 </script>
 
-<style>
+<style scoped>
 .card {
   display: flex;
   flex: 1;
@@ -45,12 +81,37 @@ export default Vue.extend({
   border-radius: 5px;
 }
 
+.card-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-row-top {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.card-row-bottom {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
 .card:hover {
   cursor: pointer;
 }
 
 .thumbnail {
   border-radius: 2px;
+  margin-right: 15px;
+}
+
+.thumbnail-noimage {
+  width: 100%;
+  height: 100%;
 }
 
 .card:first-child {
@@ -59,11 +120,30 @@ export default Vue.extend({
 
 .title {
   color: #222222;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  margin-top: 0px;
-  margin-left: 15px;
+  margin: 0px;
   font-weight: bold;
   font-size: 1.5em;
+}
+
+.sub {
+  color: #adadad;
+  margin: 0px;
+  font-weight: bold;
+}
+
+.sub:hover {
+  text-decoration: underline;
+}
+
+.author {
+  color: #adadad;
+  margin: 0px;
+  font-weight: bold;
+}
+
+.score {
+  align-self: flex-end;
+  margin-bottom: 0;
+  color: #ff4500;
 }
 </style>

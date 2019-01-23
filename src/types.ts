@@ -6,6 +6,9 @@ export interface IPost {
 	thumbnail_height: number;
 	thumbnail_width: number;
 	media: IMedia;
+	score: number;
+	author: string;
+	subreddit: string;
 }
 
 export interface IMedia {

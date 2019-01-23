@@ -5,12 +5,14 @@
 	"main": "dist/index.js",
 	"scripts": {
 		"build": "webpack",
-		"watch": "webpack --watch"
+		"watch": "webpack --watch",
+		"web": "http-server -c0"
 	},
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
 		"@types/node": "^10.12.18",
+		"@types/validator": "^10.9.0",
 		"css-loader": "^2.1.0",
 		"ts-loader": "^5.3.3",
 		"typescript": "^3.2.2",
@@ -21,6 +23,7 @@
 		"webpack-cli": "^3.2.1"
 	},
 	"dependencies": {
-		"node": "^11.6.0"
+		"node": "^11.6.0",
+		"validator": "^10.11.0"
 	}
 }
