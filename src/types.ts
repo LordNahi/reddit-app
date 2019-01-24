@@ -16,5 +16,10 @@ export interface IMedia {
 }
 
 export interface IRedditVideo {
+	dash_url: string;
+	duration: number;
 	fallback_url: string;
+	height: number;
+	width: number;
+	is_gif: boolean;
 }

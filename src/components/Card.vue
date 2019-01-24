@@ -7,7 +7,7 @@
           <h2 class="title">{{ truncatedTitle }}</h2>
           <h3 class="author">{{ prefixedAuthor }}</h3>
         </div>
-        <h3 @click="getPosts" class="sub">{{ prefixedSub }}</h3>
+        <h3 @click="onSubSelect()" class="sub">{{ prefixedSub }}</h3>
       </div>
       <div class="card-row-bottom">
         <h3 class="score">{{ score }}</h3>
@@ -58,12 +58,14 @@ export default Vue.extend({
     onPostSelect() {
       this.$emit("onPostSelect", this.post);
     },
+    onSubSelect() {
+      this.$emit("onSubSelect", this.sub);
+    },
     getUrl(url: string) {
       return isURL(url) ? url : undefined;
     }
   },
   beforeMount() {
-    this.url = this.getUrl(this.post.url);
     this.thumbnail = this.getUrl(this.post.thumbnail);
   }
 });

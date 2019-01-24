@@ -6,6 +6,7 @@
         :key="post.url"
         :post="post"
         @onPostSelect="handlePostSelect"
+        @onSubSelect="getPosts"
       />
       <LoadMoreComponent @onPress="getPosts" :loading="loading"/>
     </div>
@@ -53,11 +54,13 @@ export default Vue.extend({
   },
   methods: {
     handlePostSelect(post: IPost) {
+      post.url = this.sanitiseUrl(post.url);
       this.selectedPost = post;
     },
     getPosts(sub?: string) {
       if (sub && sub !== this.sub) {
         this.after = "";
+        this.posts = [];
         this.sub = sub;
       }
 
@@ -87,7 +90,7 @@ export default Vue.extend({
               this.posts.push(data);
             }
 
-            console.log("POSTS:", this.posts);
+            console.log("POSTS", this.posts);
 
             this.loading = false;
           });
@@ -95,10 +98,36 @@ export default Vue.extend({
         .on("error", e => {
           console.log("Got an error: ", e);
         });
+    },
+    sanitiseUrl(url: string) {
+      let sanitisedUrl = url;
+      let websites = [
+        {
+          domain: "https://i.imgur.com",
+          mirror: "https://imgur.kageurufu.net"
+        },
+        {
+          domain: "http://gfycat.com/",
+          mirror: "https://giant.gfycat.com/",
+          append: ".gif"
+        }
+      ];
+
+      for (let website of websites) {
+        if (sanitisedUrl.includes(website.domain)) {
+          sanitisedUrl = sanitisedUrl.replace(website.domain, website.mirror);
+
+          if (website.append) {
+            sanitisedUrl += website.append;
+          }
+        }
+      }
+
+      return sanitisedUrl;
     }
   },
   beforeMount() {
-    this.getPosts();
+    this.getPosts("publicfreakout");
   }
 });
 </script>
