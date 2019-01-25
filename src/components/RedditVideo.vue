@@ -1,38 +1,43 @@
 <template>
-  <div id="player">
-    <video id="player-video" :src="av.video"></video>
-    <video id="player-audio" :src="av.audio"></video>
+  <div v-if="video !== ''" class="player">
+    <video class="player-video" :src="video_url"></video>
+    <audio class="player-audio" :src="audio_url"></audio>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+
 import { IRedditVideo } from "../types";
 
-interface IAV {
-  video: string;
-  audio: string;
-}
-
 export default Vue.extend({
+  props: ["src"],
   data() {
     return {
-      av: {} as IAV,
-      video: {} as Element,
-      audio: {} as Element
+      percent: 0,
+      video_url: "",
+      video_loaded: false,
+      audio_url: "",
+      audio_loaded: false,
+      video: {} as HTMLMediaElement,
+      audio: {} as HTMLMediaElement,
+      progress: {} as HTMLElement
     };
   },
-  props: {
-    data: {
-      type: {} as () => IRedditVideo,
-      required: true
-    }
-  },
   methods: {
-    togglePlay() {},
-    skip() {},
-    handleRangeUpdate() {
-      this.video[this.name] = this.value;
+    togglePlay() {
+      const method = this.video.paused ? "play" : "pause";
+      this.video[method]();
+      this.audio[method]();
+    },
+    handleProgress() {
+      this.percent = (this.video.currentTime / this.video.duration) * 100;
+    },
+    scrub(e: MouseEvent) {
+      const scrubTime =
+        (e.offsetX / this.progress.offsetWidth) * this.video.duration;
+      this.video.currentTime = scrubTime;
+      this.audio.currentTime = scrubTime;
     },
     extractId(url: string) {
       /**
@@ -43,26 +48,54 @@ export default Vue.extend({
       // Split out url and returns the Id ...
       return url.split("/")[3];
     },
-    buildLinks(url: string): { video: string; audio: string } {
+    setLinks(url: string) {
       const id = this.extractId(url);
 
       // TODO: Return all potential DASH links ...
-      const video = `https://v.redd.it/${id}/DASH_9_6_M`;
-      const audio = `https://v.redd.it/${id}/audio`;
 
-      return {
-        video,
-        audio
-      };
+      this.video_url = `https://v.redd.it/${id}/DASH_1_2_M`;
+      this.audio_url = `https://v.redd.it/${id}/audio`;
+
+      console.log("VIDEO:", this.video_url);
+      console.log("AUDIO:", this.audio_url);
     },
-    beforeMount() {
-      const player = document.querySelector(".player") as Element;
-
-      const video = player.querySelector(".player-video");
-      const audio = player.querySelector(".player-audio");
-      const progress = player.querySelector(".progress");
+    mediaLoaded(media: "video" | "audio") {
+      switch (media) {
+        case "video":
+          this.video_loaded = true;
+        case "audio":
+          this.audio_loaded = true;
+      }
     }
+  },
+  mounted() {
+    const player = document.querySelector(".player") as HTMLElement;
+
+    this.video = player.querySelector(".player-video") as HTMLMediaElement;
+    this.video.addEventListener("canplay");
+
+    this.audio = player.querySelector(".player-audio") as HTMLMediaElement;
+    this.audio.addEventListener("canplay");
+
+    this.progress = player.querySelector(".progress") as HTMLElement;
+
+    this.setLinks(this.src);
+  },
+  destroyed() {
+    this.video.removeEventListener("canplay", () => {
+      this.video_loaded = true;
+    });
+    this.audio.removeEventListener("canplay", () => {
+      this.audio_loaded = true;
+    });
   }
 });
 </script>
+
+<style>
+.player {
+  width: 100%;
+}
+</style>
+
 

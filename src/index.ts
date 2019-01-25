@@ -1,15 +1,11 @@
 import Vue from "vue";
 
-import AppComponent from "./App.vue";
+import App from "./App.vue";
+import router from "./router";
 
-let v = new Vue({
-	el: "#app",
-	template: `
-	<div>
-		<AppComponent />
-	</div>
-	`,
-	components: {
-		AppComponent
-	}
-});
+Vue.config.productionTip = false;
+
+new Vue({
+	render: h => h(App),
+	router
+}).$mount("#app");
