@@ -21,7 +21,7 @@ export default Vue.extend({
       audio_loaded: false,
       video: {} as HTMLMediaElement,
       audio: {} as HTMLMediaElement,
-      progress: {} as HTMLElement
+      progress: {} as HTMLElement,
     };
   },
   methods: {
@@ -66,16 +66,14 @@ export default Vue.extend({
         case "audio":
           this.audio_loaded = true;
       }
-    }
+    },
   },
   mounted() {
     const player = document.querySelector(".player") as HTMLElement;
 
     this.video = player.querySelector(".player-video") as HTMLMediaElement;
-    this.video.addEventListener("canplay");
 
     this.audio = player.querySelector(".player-audio") as HTMLMediaElement;
-    this.audio.addEventListener("canplay");
 
     this.progress = player.querySelector(".progress") as HTMLElement;
 
@@ -88,7 +86,7 @@ export default Vue.extend({
     this.audio.removeEventListener("canplay", () => {
       this.audio_loaded = true;
     });
-  }
+  },
 });
 </script>
 

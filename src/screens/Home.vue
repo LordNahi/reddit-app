@@ -1,6 +1,10 @@
 <template>
   <div class="container">
     <div id="feed" class="feed">
+      <div class="sub-search">
+        <input class="sub-input" type="text" placeholder="Enter a sub..." v-model="sub" />
+        <button class="sub-search-button" v-on:click="changeSub">Go!</button>
+      </div>
       <CardComponent
         v-for="post in posts"
         :key="post.url"
@@ -8,10 +12,10 @@
         @onPostSelect="handlePostSelect"
         @onSubSelect="getPosts"
       />
-      <LoadMoreComponent @onPress="getPosts" :loading="loading"/>
+      <LoadMoreComponent @onPress="getPosts" :loading="loading" />
     </div>
     <div class="post-content">
-      <RedditVideoComponent v-if="isRedditVideo" :src="selectedPost.url"/>
+      <RedditVideoComponent v-if="isRedditVideo" :src="selectedPost.url" />
       <div v-else-if="selectedPost">
         <video
           v-if="selectedPost.is_video"
@@ -20,9 +24,9 @@
           loop="loop"
           class="post-image"
         >
-          <source :src="selectedPost.media.reddit_video.fallback_url" type="video/webm">
+          <source :src="selectedPost.media.reddit_video.fallback_url" type="video/webm" />
         </video>
-        <img v-else class="post-image" :src="selectedPost.url">
+        <img v-else class="post-image" :src="selectedPost.url" />
       </div>
       <div v-else class="no-image">
         <h1 class="click-a-post">Click a post!</h1>
@@ -48,25 +52,27 @@ export default Vue.extend({
       isRedditVideo: false,
       posts: [] as IPost[],
       sub: "",
-      after: ""
+      after: "",
     };
   },
   components: {
     CardComponent,
     RedditVideoComponent,
-    LoadMoreComponent
+    LoadMoreComponent,
   },
   methods: {
     handlePostSelect(post: IPost) {
       post.url = this.sanitiseUrl(post.url);
       this.selectedPost = post;
     },
+    changeSub() {
+      this.getPosts(this.sub);
+    },
     getPosts(sub?: string) {
-      if (sub && sub !== this.sub) {
-        this.after = "";
-        this.posts = [];
-        this.sub = sub;
-      }
+      this.after = "";
+      this.posts = [];
+
+      console.log(this.posts);
 
       let body = "";
       let prefixedSub = this.sub !== "" ? `r/${this.sub}` : "";
@@ -76,10 +82,10 @@ export default Vue.extend({
       this.loading = true;
 
       http
-        .get(url, resposnse => {
+        .get(url, (resposnse) => {
           let body = "";
 
-          resposnse.on("data", chunk => {
+          resposnse.on("data", (chunk) => {
             body += chunk;
           });
 
@@ -99,7 +105,7 @@ export default Vue.extend({
             this.loading = false;
           });
         })
-        .on("error", e => {
+        .on("error", (e) => {
           console.log("Got an error: ", e);
         });
     },
@@ -108,13 +114,13 @@ export default Vue.extend({
       let websites = [
         {
           domain: "https://i.imgur.com",
-          mirror: "https://imgur.kageurufu.net"
+          mirror: "https://imgur.kageurufu.net",
         },
         {
           domain: "http://gfycat.com/",
           mirror: "https://giant.gfycat.com/",
-          append: ".gif"
-        }
+          append: ".gif",
+        },
       ];
 
       this.isRedditVideo = false;
@@ -138,17 +144,37 @@ export default Vue.extend({
       }
 
       return sanitisedUrl;
-    }
+    },
   },
-  beforeMount() {
-    this.getPosts("publicfreakout");
-  }
+  beforeMount() {},
 });
 </script>
 
 <style>
 .container {
   display: flex;
+}
+
+.sub-input {
+  height: 1.5rem;
+  border: #fff solid 0;
+  padding: 0.6rem;
+  margin-right: 1rem;
+  flex: 1;
+}
+
+.sub-search {
+  display: flex;
+  padding: 1rem;
+}
+
+.sub-search-button {
+  background-color: #ff4500;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border-style: none;
+  color: #ffffff;
+  font-weight: bold;
 }
 
 .feed {
